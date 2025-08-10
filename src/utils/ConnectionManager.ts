@@ -1,9 +1,9 @@
 import { RevitClientConnection } from "./SocketClient.js";
 
 /**
- * 连接到Revit客户端并执行操作
- * @param operation 连接成功后要执行的操作函数
- * @returns 操作的结果
+ * Connect to Revit client and execute operations
+ * @param operation Operation function to execute after successful connection
+ * @returns Result of the operation
  */
 export async function withRevitConnection<T>(
   operation: (client: RevitClientConnection) => Promise<T>
@@ -11,7 +11,7 @@ export async function withRevitConnection<T>(
   const revitClient = new RevitClientConnection("localhost", 8081);
 
   try {
-    // 连接到Revit客户端
+    // Connect to Revit client
     if (!revitClient.isConnected) {
       await new Promise<void>((resolve, reject) => {
         const onConnect = () => {
@@ -34,15 +34,15 @@ export async function withRevitConnection<T>(
         setTimeout(() => {
           revitClient.socket.removeListener("connect", onConnect);
           revitClient.socket.removeListener("error", onError);
-          reject(new Error("连接到Revit客户端失败"));
+          reject(new Error("Failed to connect to Revit client"));
         }, 5000);
       });
     }
 
-    // 执行操作
+    // Execute operation
     return await operation(revitClient);
   } finally {
-    // 断开连接
+    // Disconnect
     revitClient.disconnect();
   }
 }
