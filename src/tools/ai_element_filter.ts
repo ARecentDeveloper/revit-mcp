@@ -5,7 +5,7 @@ import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerAIElementFilterTool(server: McpServer) {
   server.tool(
     "ai_element_filter",
-    "An intelligent Revit element querying tool designed specifically for AI assistants to retrieve detailed element information from Revit projects. This tool allows the AI to request elements matching specific criteria (such as category, type, visibility, or spatial location) and then perform further analysis on the returned data to answer complex user queries about Revit model elements. Example: When a user asks 'Find all walls taller than 5m in the project', the AI would: 1) Call this tool with parameters: {\"filterCategory\": \"OST_Walls\", \"includeInstances\": true}, 2) Receive detailed information about all wall instances in the project, 3) Process the returned data to filter walls with height > 5000mm, 4) Present the filtered results to the user with relevant details.",
+    "An intelligent Revit element querying tool with optimized parameter extraction. Use this tool to retrieve element information with precise control over what parameters are returned, minimizing token usage while ensuring you get exactly what's needed. IMPORTANT: When users ask for specific parameters (like 'flange thickness', 'number of studs', 'web thickness'), always use the 'requestedParameters' field to explicitly request those parameters - they won't appear automatically. Examples: 1) User asks 'What's the flange thickness of this beam?' → Use: {filterCategory: 'OST_StructuralFraming', requestedParameters: ['flange thickness'], parameterFilters: [{name: 'ElementId', value: 'ID', operator: 'equals'}]}. 2) User asks 'Find beams with flange thickness > 0.2' → Use: {filterCategory: 'OST_StructuralFraming', parameterFilters: [{name: 'flange thickness', operator: 'greater', value: 0.2}]} (filtered parameters are auto-included). 3) User asks 'Tell me about this element' → Use: {detailLevel: 'basic'} for minimal info.",
     {
       data: z.object({
         filterCategory: z
@@ -62,12 +62,32 @@ export function registerAIElementFilterTool(server: McpServer) {
           })
           .optional()
           .describe("The maximum point coordinates (in mm) for spatial bounding box filtering. When set along with boundingBoxMin, only elements that intersect with this bounding box will be returned. Set to null to disable this filter."),
-          maxElements: z
+        parameterFilters: z
+          .array(z.object({
+            name: z.string().describe("Parameter name or alias (e.g., 'flange thickness', 'tf', 'web thickness', 'tw', 'length', 'height'). Uses the parameter mapping system to resolve aliases and find the correct Revit parameter."),
+            operator: z.enum(["equals", "greater", "less", "greaterEqual", "lessEqual", "contains", "notEquals"])
+              .describe("Comparison operator for filtering"),
+            value: z.union([z.string(), z.number()])
+              .describe("Value to compare against. For numeric parameters, use numbers. For text parameters, use strings."),
+            valueType: z.enum(["String", "Double", "Integer", "Boolean"]).optional()
+              .describe("Optional value type hint for proper comparison (auto-detected if not specified)")
+          }))
+          .optional()
+          .describe("Filter elements by specific parameter values using the parameter mapping system. This leverages the category-specific parameter mappings to resolve parameter names and aliases automatically."),
+        maxElements: z
           .number()
           .optional()
           .describe("The maximum number of elements to find in a single tool invocation. Default is 50. Values exceeding 50 are not recommended for performance reasons."),
+        requestedParameters: z
+          .array(z.string())
+          .optional()
+          .describe("CRITICAL: Specific parameters to include in the response. When users ask for specific parameters (like 'flange thickness', 'number of studs', 'web thickness'), you MUST list them here or they won't appear in the results. Examples: ['flange thickness', 'web thickness'], ['number of studs'], ['height', 'width']. Uses parameter mapping system to resolve aliases."),
+        detailLevel: z
+          .enum(["basic", "standard", "detailed"])
+          .default("basic")
+          .describe("Controls how many parameters are returned: 'basic' = minimal info (ID, name, type, basic dimensions) - use for general queries; 'standard' = common parameters; 'detailed' = all available parameters. Use 'basic' unless user specifically asks for detailed information."),
       })
-        .describe("Configuration parameters for the Revit element filter tool. These settings determine which elements will be selected from the Revit project based on various filtering criteria. Multiple filters can be combined to achieve precise element selection. All spatial coordinates should be provided in millimeters."),
+        .describe("Configuration parameters for the Revit element filter tool with optimized parameter extraction. PARAMETER EXTRACTION RULES: 1) For specific parameter queries (user asks 'What is the flange thickness?'), use 'requestedParameters': ['flange thickness'] 2) For filtered searches (user asks 'Find beams with flange thickness > 0.2'), the filtered parameter is automatically included 3) For general info (user asks 'Tell me about this element'), use 'detailLevel': 'basic' 4) Multiple filters can be combined. All spatial coordinates in millimeters."),
     },
     async (args, extra) => {
       const params = args;
