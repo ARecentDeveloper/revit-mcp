@@ -2,10 +2,10 @@ import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
 
-export function registerAIElementFilterTool(server: McpServer) {
+export function registerElementFilterTool(server: McpServer) {
   server.tool(
-    "ai_element_filter",
-    "An intelligent Revit element querying tool with optimized parameter extraction. Use this tool to retrieve element information with precise control over what parameters are returned, minimizing token usage while ensuring you get exactly what's needed. IMPORTANT: When users ask for specific parameters (like 'flange thickness', 'number of studs', 'web thickness'), always use the 'requestedParameters' field to explicitly request those parameters - they won't appear automatically. PARAMETER VALUES: For numeric parameters, RawValue contains precise values in Revit internal units - dimensional parameters (lengths, widths, thicknesses, heights) are in feet, areas in square feet, volumes in cubic feet, angles in radians, counts/integers as-is. Always use RawValue for accurate conversions, never parse display strings. Examples: 1) User asks 'What's the flange thickness of this beam?' → Use: {filterCategory: 'OST_StructuralFraming', requestedParameters: ['flange thickness'], parameterFilters: [{name: 'ElementId', value: 'ID', operator: 'equals'}]}. 2) User asks 'Find beams with flange thickness > 0.2' → Use: {filterCategory: 'OST_StructuralFraming', parameterFilters: [{name: 'flange thickness', operator: 'greater', value: 0.2}]} (filtered parameters are auto-included). 3) User asks 'Tell me about this element' → Use: {detailLevel: 'basic'} for minimal info.",
+    "element_filter",
+    "An intelligent Revit element querying tool with optimized parameter extraction. Use this tool to retrieve element information with precise control over what parameters are returned, minimizing token usage while ensuring you get exactly what's needed. EFFICIENCY TIP: When you have specific element IDs, query them directly using parameterFilters with ElementId rather than using broad category filters - this is much faster and more token-efficient. IMPORTANT: When users ask for specific parameters (like 'flange thickness', 'number of studs', 'web thickness'), always use the 'requestedParameters' field to explicitly request those parameters - they won't appear automatically. PARAMETER VALUES: For numeric parameters, RawValue contains precise values in Revit internal units - dimensional parameters (lengths, widths, thicknesses, heights) are in feet, areas in square feet, volumes in cubic feet, angles in radians, counts/integers as-is. Always use RawValue for accurate conversions, never parse display strings. Examples: 1) User asks 'What's the flange thickness of this beam?' → Use: {filterCategory: 'OST_StructuralFraming', requestedParameters: ['flange thickness'], parameterFilters: [{name: 'ElementId', value: 'ID', operator: 'equals'}]}. 2) User asks 'Find beams with flange thickness > 0.2' → Use: {filterCategory: 'OST_StructuralFraming', parameterFilters: [{name: 'flange thickness', operator: 'greater', value: 0.2}]} (filtered parameters are auto-included). 3) User asks 'Tell me about this element' → Use: {detailLevel: 'basic'} for minimal info.",
     {
       data: z.object({
         filterCategory: z
@@ -95,7 +95,7 @@ export function registerAIElementFilterTool(server: McpServer) {
       try {
         const response = await withRevitConnection(async (revitClient) => {
           return await revitClient.sendCommand(
-            "ai_element_filter",
+            "element_filter",
             params
           );
         });
