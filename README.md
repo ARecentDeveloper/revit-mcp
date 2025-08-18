@@ -106,3 +106,5 @@ flowchart LR
 | send_code_to_revit         | Send code to Revit to execute             |
 | color_splash		     | Color elements based on a parameter value	|
 | tag_walls		     | Tag all walls in view            |
+| pa_compliance_report       | Generate PA compliance report with naming convention analysis |
+| pa_compliance_action       | Execute PA compliance corrections from Excel file |
