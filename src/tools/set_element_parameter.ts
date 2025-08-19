@@ -15,8 +15,14 @@ export function registerSetElementParameterTool(server: McpServer) {
           .string()
           .describe("Name or alias of the parameter to modify (e.g., 'Mark', 'Comments', 'Area', 'Volume'). Uses the parameter mapping system to resolve aliases and find the correct Revit parameter."),
         parameterValue: z
-          .union([z.string(), z.number(), z.boolean(), z.null()])
-          .describe("New value for the parameter. Type should match the parameter type (string for text parameters, number for numeric parameters, boolean for yes/no parameters). Use null to clear string parameters."),
+          .union([
+            z.string(), 
+            z.number(), 
+            z.boolean(), 
+            z.null(),
+            z.array(z.union([z.string(), z.number(), z.boolean(), z.null()]))
+          ])
+          .describe("New value(s) for the parameter. Can be a single value (applied to all elements) or an array of values (parallel to elementIds array). Type should match the parameter type (string for text parameters, number for numeric parameters, boolean for yes/no parameters). Use null to clear string parameters. Examples: Single value: 'F1' (applied to all elements), Array values: ['F1', 'F2', 'F3'] (matched by index to elementIds)."),
         parameterValueType: z
           .enum(["String", "Double", "Integer", "Boolean"])
           .optional()
