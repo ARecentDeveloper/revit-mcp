@@ -5,12 +5,12 @@ import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerSendCodeToRevitTool(server: McpServer) {
   server.tool(
     "send_code_to_revit",
-    "Send C# code to Revit for execution. The code will be inserted into a template with access to the Revit Document. IMPORTANT: Use 'document' (lowercase) to access the Document. No access to UIDocument/Selection - use FilteredElementCollector for element queries. Code must return a value (use 'return null;' if none needed). Use traditional string concatenation instead of string interpolation. Standard Revit API classes work normally.",
+    "Send C# code to Revit for execution. The code will be inserted into a template with access to the Revit Document. IMPORTANT: Use 'document' (lowercase) to access the Document. SELECTION ACCESS: You can access UIDocument/Selection by creating 'var uiApp = new UIApplication(document.Application); var selection = uiApp.ActiveUIDocument.Selection;'. Code must return a value (use 'return null;' if none needed). Use traditional string concatenation instead of string interpolation. Standard Revit API classes work normally. TRANSACTIONS: Your code runs inside an automatically managed transaction - DO NOT create Transaction objects in your code as this will cause 'Starting a new transaction is not permitted' errors. The framework handles transaction Start() and Commit() automatically.",
     {
       code: z
         .string()
         .describe(
-          "The C# code to execute in Revit. Must return a value. Available variables: 'document' (Document instance). Use FilteredElementCollector for element queries since UIDocument/Selection are not available. Example: 'var elements = new FilteredElementCollector(document).OfClass(typeof(Wall)).ToElements(); return null;'"
+          "The C# code to execute in Revit. Must return a value. Available variables: 'document' (Document instance). Access selection via: 'var uiApp = new UIApplication(document.Application); var selectedIds = uiApp.ActiveUIDocument.Selection.GetElementIds();'. IMPORTANT: Do NOT create Transaction objects - your code runs inside an auto-managed transaction. Example: 'var elements = new FilteredElementCollector(document).OfClass(typeof(Wall)).ToElements(); return null;'"
         ),
       parameters: z
         .array(z.any())
