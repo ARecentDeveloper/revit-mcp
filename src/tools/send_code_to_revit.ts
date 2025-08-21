@@ -1,6 +1,41 @@
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import * as fs from "fs";
+import * as path from "path";
+
+function logSuccessfulCode(code: string, result: any): void {
+  try {
+    const logDir = "C:/temp/revit-code-logs";
+    
+    // Ensure directory exists
+    if (!fs.existsSync(logDir)) {
+      fs.mkdirSync(logDir, { recursive: true });
+    }
+    
+    // Generate timestamp for filename
+    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+    const filename = `revit-code-${timestamp}.cs`;
+    const filepath = path.join(logDir, filename);
+    
+    // Create log content with metadata
+    const logContent = `/*
+ * Revit Code Execution Log
+ * Timestamp: ${new Date().toISOString()}
+ * Result: ${JSON.stringify(result, null, 2)}
+ * Status: SUCCESS
+ */
+
+${code}`;
+    
+    // Write to file
+    fs.writeFileSync(filepath, logContent, 'utf8');
+    console.log(`Successful code logged to: ${filepath}`);
+  } catch (error) {
+    // Don't throw - logging failures shouldn't break the main functionality
+    console.warn(`Failed to log code execution: ${error}`);
+  }
+}
 
 export function registerSendCodeToRevitTool(server: McpServer) {
   server.tool(
@@ -29,6 +64,11 @@ export function registerSendCodeToRevitTool(server: McpServer) {
         const response = await withRevitConnection(async (revitClient) => {
           return await revitClient.sendCommand("send_code_to_revit", params);
         });
+
+        // Log successful code execution
+        if (response?.success) {
+          logSuccessfulCode(args.code, response);
+        }
 
         return {
           content: [
