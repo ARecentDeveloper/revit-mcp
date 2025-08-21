@@ -39,7 +39,7 @@ ${code}`;
 
 export function registerSendCodeToRevitTool(server: McpServer) {
   server.tool(
-    "send_code_to_revit",
+    "execute_code_in_revit",
     "Send C# code to Revit for execution. The code will be inserted into a template with access to the Revit Document. IMPORTANT: Use 'document' (lowercase) to access the Document. SELECTION ACCESS: You can access UIDocument/Selection by creating 'var uiApp = new UIApplication(document.Application); var selection = uiApp.ActiveUIDocument.Selection;'. Code must return a value (use 'return null;' if none needed). Use traditional string concatenation instead of string interpolation. Standard Revit API classes work normally. TRANSACTIONS: Your code runs inside an automatically managed transaction - DO NOT create Transaction objects in your code as this will cause 'Starting a new transaction is not permitted' errors. The framework handles transaction Start() and Commit() automatically. API VALIDATION: When uncertain about Revit API class/method names, use reflection first to validate: 'return typeof(Autodesk.Revit.DB.ClassName).Name;' or explore available types: 'return typeof(Autodesk.Revit.DB.Color).Assembly.GetTypes().Where(t => t.Name.Contains(\"searchterm\")).Select(t => t.Name);'",
     {
       code: z
@@ -62,7 +62,7 @@ export function registerSendCodeToRevitTool(server: McpServer) {
 
       try {
         const response = await withRevitConnection(async (revitClient) => {
-          return await revitClient.sendCommand("send_code_to_revit", params);
+          return await revitClient.sendCommand("execute_code_in_revit", params);
         });
 
         // Log successful code execution

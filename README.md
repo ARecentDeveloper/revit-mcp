@@ -103,7 +103,7 @@ flowchart LR
 | modify_element             | Modify element's properties (instance parameters) |
 | search_modules             | Search for available modules              |
 | use_module                 | Use module                                |
-| send_code_to_revit         | Send code to Revit to execute             |
+| execute_code_in_revit      | Execute code in Revit                     |
 | color_splash		     | Color elements based on a parameter value	|
 | tag_walls		     | Tag all walls in view            |
 | pa_compliance_report       | Generate PA compliance report with naming convention analysis |
