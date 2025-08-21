@@ -11,10 +11,15 @@ export function registerGetSelectedElementsTool(server: McpServer) {
         .number()
         .optional()
         .describe("Maximum number of elements to return"),
+      _refresh: z
+        .number()
+        .optional()
+        .describe("Internal parameter to force cache bypass - automatically set to current timestamp"),
     },
     async (args, extra) => {
       const params = {
         limit: args.limit || 100,
+        _refresh: Date.now(), // Force unique call signature to bypass caching
       };
 
       try {
