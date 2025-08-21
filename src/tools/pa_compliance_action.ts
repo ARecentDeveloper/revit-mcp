@@ -21,7 +21,7 @@ export function registerPAComplianceActionTool(server: McpServer) {
           .describe("When true, preview changes without applying them. Shows what would be changed without modifying the Revit project. Useful for validating corrections before execution."),
         backupProject: z
           .boolean()
-          .default(true)
+          .default(false)
           .describe("When true, creates a backup of the current project before applying changes. Recommended for safety when making bulk modifications."),
         continueOnError: z
           .boolean()

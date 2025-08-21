@@ -5,7 +5,7 @@ import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerPAComplianceReportTool(server: McpServer) {
   server.tool(
     "pa_compliance_report",
-    "Generate a comprehensive PA (Port Authority) compliance report that exports to Excel. This tool analyzes Revit projects for naming convention and model integrity issues, creating an Excel file with multiple sheets covering annotation families, model families, worksets, sheets, and model integrity. Each sheet includes current names and AI-suggested corrections following PA naming conventions. Supports step-by-step execution for processing different compliance areas incrementally.",
+    "Generate a comprehensive PA (Port Authority) compliance report that exports to Excel. This tool analyzes Revit projects for naming convention and model integrity issues, creating an Excel file with multiple sheets covering annotation families, model families, worksets, sheets, and model integrity. Each sheet includes current names and AI-suggested corrections following PA naming conventions. Supports step-by-step execution for processing different compliance areas incrementally. IMPORTANT: When a user requests a report that includes annotation families, you MUST first ask them for their company initial and whether to include PA families - DO NOT run this tool until they provide these answers.",
     {
       data: z.object({
         outputPath: z
@@ -19,7 +19,7 @@ export function registerPAComplianceReportTool(server: McpServer) {
         includeAnnotationFamilies: z
           .boolean()
           .default(true)
-          .describe("Include annotation family naming analysis in the report. When true, generates a sheet with annotation families and PA-CATEGORY-DESCRIPTION naming suggestions."),
+          .describe("Include annotation family naming analysis in the report. When true, generates a sheet with annotation families and CI-CATEGORY-DESCRIPTION1-DESCRIPTION2 naming suggestions."),
         includeModelFamilies: z
           .boolean()
           .default(true)
@@ -36,6 +36,14 @@ export function registerPAComplianceReportTool(server: McpServer) {
           .boolean()
           .default(true)
           .describe("Include model integrity analysis in the report. When true, generates a sheet identifying Generic category elements that should be recategorized."),
+        companyInitial: z
+          .string()
+          .default("EN")
+          .describe("Company initial for annotation family naming (default: 'EN'). Used in the CI-CATEGORY-DESCRIPTION1-DESCRIPTION2 format for annotation families."),
+        includePAFamilies: z
+          .boolean()
+          .default(false)
+          .describe("Whether to include families starting with 'PA-' in the report (default: false). When false, excludes PA families from export."),
       })
         .describe("Configuration parameters for PA compliance report generation. The tool analyzes the current Revit project and creates an Excel file with multiple sheets containing current element names and AI-suggested corrections following PA naming conventions."),
     },
