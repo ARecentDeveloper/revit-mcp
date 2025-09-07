@@ -5,13 +5,13 @@ import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerGetCurrentViewElementsTool(server: McpServer) {
   server.tool(
     "get_current_view_elements",
-    "Get elements from the current active view in Revit. You can filter by model categories (like Walls, Floors) or annotation categories (like Dimensions, Text). Use includeHidden to show/hide invisible elements and limit to control the number of returned elements.",
+    "Get elements from the current active view in Revit. You can filter by model categories (like Walls, Floors) or annotation categories (like Dimensions, Text). Use includeHidden to show/hide invisible elements and limit to control the number of returned elements. CURTAIN WALLS: OST_Walls includes both regular walls and curtain walls (system automatically distinguishes them). Use OST_CurtaSystem for curtain systems, OST_CurtainWallPanels for curtain panels, OST_CurtainWallMullions for mullions.",
     {
       modelCategoryList: z
         .array(z.string())
         .optional()
         .describe(
-          "List of Revit model category names (e.g., 'OST_Walls', 'OST_Doors', 'OST_Floors')"
+          "List of Revit model category names (e.g., 'OST_Walls', 'OST_Doors', 'OST_Floors'). Note: OST_Walls includes both regular walls and curtain walls (automatically distinguished by system). Use OST_CurtaSystem for curtain systems, OST_CurtainWallPanels for panels, OST_CurtainWallMullions for mullions."
         ),
       annotationCategoryList: z
         .array(z.string())

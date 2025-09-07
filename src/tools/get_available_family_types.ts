@@ -5,13 +5,13 @@ import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerGetAvailableFamilyTypesTool(server: McpServer) {
   server.tool(
     "get_available_family_types",
-    "Get available family types in the current Revit project. You can filter by category and family name, and limit the number of returned types.",
+    "Get available family types in the current Revit project. You can filter by category and family name, and limit the number of returned types. CURTAIN WALLS: OST_Walls returns both regular wall types and curtain wall types. Use OST_CurtaSystem for curtain system types, OST_CurtainWallPanels for panel types, OST_CurtainWallMullions for mullion types.",
     {
       categoryList: z
         .array(z.string())
         .optional()
         .describe(
-          "List of Revit category names to filter by (e.g., 'OST_Walls', 'OST_Doors', 'OST_Furniture')"
+          "List of Revit category names to filter by (e.g., 'OST_Walls', 'OST_Doors', 'OST_Furniture'). Note: OST_Walls includes both regular wall types and curtain wall types."
         ),
       familyNameFilter: z
         .string()
