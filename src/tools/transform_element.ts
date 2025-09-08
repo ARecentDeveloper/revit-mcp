@@ -5,7 +5,7 @@ import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerTransformElementTool(server: McpServer) {
   server.tool(
     "transform_element",
-    "Transform Revit elements (copy, move, rotate, mirror, array, offset). All coordinate and distance values in imperial units (feet, inches, fractions). Supported formats: \"2'\", \"30\\\"\", \"2' 6\\\"\", \"1/4\\\"\", \"3.5'\", plain numbers (assumed inches).",
+    "Transform Revit elements (copy, move, rotate, mirror, array, offset). UNITS: All distances in FEET (Revit's native unit). Formats: Numbers as feet (10 = 10 feet), feet with quotes (\"10'\" = 10 feet), inches (\"6\\\"\" = 0.5 feet), feet-inches (\"10'-6\\\"\" = 10.5 feet). Examples: [10, 0, 0] or [\"10'\", \"0\", \"0\"] to move 10 feet right.",
     {
       data: z
         .object({
@@ -21,17 +21,17 @@ export function registerTransformElementTool(server: McpServer) {
                 .array(z.string())
                 .length(3)
                 .optional()
-                .describe("Translation/direction vector [X, Y, Z] in imperial units. Required for Copy, Move operations. For Linear array, used as direction. Examples: ['10\\'', '5\\'', '0'], ['30\\\"', '24\\\"', '6\\\"']."),
+                .describe("Translation/direction vector [X, Y, Z] in FEET. Required for Copy, Move. Examples: ['10', '0', '0'] = 10 ft right, ['10\\'', '5\\'', '0'] = 10 ft right + 5 ft forward, ['6\\\"', '0', '0'] = 6 inches right."),
               origin: z
                 .array(z.string())
                 .length(3)
                 .optional()
-                .describe("Origin point [X, Y, Z] in imperial units. Required for Rotate, Mirror operations. For Radial array, used as center point. Examples: ['0', '0', '0'], ['10\'', '5\'', '3\'']."),
+                .describe("Origin point [X, Y, Z] in FEET. Required for Rotate, Mirror. Examples: ['0', '0', '0'] = origin, ['10', '5', '3'] = 10 ft X, 5 ft Y, 3 ft Z, ['10\\'', '5\\'', '3\\''] = same."),
               axis: z
                 .array(z.string())
                 .length(3)
                 .optional()
-                .describe("Axis vector [X, Y, Z]. Required for Rotate, Mirror operations. For Radial array, used as rotation axis. Examples: ['1', '0', '0'], ['1', '1', '0']."),
+                .describe("Axis vector [X, Y, Z] (normalized automatically). Required for Rotate, Mirror. Examples: ['1', '0', '0'] = X-axis, ['0', '0', '1'] = Z-axis, ['1', '1', '0'] = diagonal."),
               angle: z
                 .number()
                 .optional()
@@ -45,7 +45,7 @@ export function registerTransformElementTool(server: McpServer) {
               spacing: z
                 .string()
                 .optional()
-                .describe("Distance in imperial units. Required for Array spacing or Offset operations. Examples: '10\\'', '24\\\"', '2\\' 6\\\"', '1/4\\\"'."),
+                .describe("Distance in FEET. Required for Array spacing or Offset. Examples: '10' = 10 feet, '10\\'' = 10 feet, '6\\\"' = 0.5 feet, '10\\'-6\\\"' = 10.5 feet."),
               arrayType: z
                 .enum(["Linear", "Radial"])
                 .default("Linear")
