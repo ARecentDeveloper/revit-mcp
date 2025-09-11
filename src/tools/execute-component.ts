@@ -17,7 +17,7 @@ export function registerExecuteComponentTool(server: McpServer) {
         .optional()
         .describe("Method to call (default: 'Run')"),
       parameters: z
-        .object({})
+        .any()
         .optional()
         .describe("Parameters to pass to the method"),
       includeShared: z
@@ -90,14 +90,17 @@ export function registerExecuteComponentTool(server: McpServer) {
         };
       }
       
+      
+      const commandPayload = {
+        componentName: args.component,
+        files: files,
+        method: args.method || "Run",
+        parameters: args.parameters
+      };
+      
       // Send to Revit for compilation and execution
       const result = await withRevitConnection(async (client) => {
-        return await client.sendCommand("ExecuteComponent", {
-          componentName: args.component,
-          files: files,
-          method: args.method || "Run",
-          methodParameters: args.parameters
-        });
+        return await client.sendCommand("ExecuteComponent", commandPayload);
       });
       
       return {
